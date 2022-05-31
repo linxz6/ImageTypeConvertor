@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +26,7 @@ namespace ImageTypeConvertorWpf
     public partial class MainWindow : Window
     {
         string[] ImageFormats = new string[] {".jpg",".png",".bmp"};
+        Task CurrentConversion;
 
         public MainWindow()
         {
@@ -106,7 +108,7 @@ namespace ImageTypeConvertorWpf
         //Convert the found files 
         private void ConvertFilesButton_Click(object sender, RoutedEventArgs e)
         {
-            //Check if the there are any files to convert
+            //Check if there are any files to convert
             if(FilesFoundListBox.Items.Count == 0)
             {
                 MessageBox.Show("No image files found to convert.");
@@ -120,17 +122,46 @@ namespace ImageTypeConvertorWpf
                 return;
             }
 
+            //Check if a conversion is currently in progress
+            if(CurrentConversion != null && CurrentConversion.IsCompleted == false && CurrentConversion.IsCompleted == false)
+            {
+                MessageBox.Show("Conversion is currently in progress.");
+                return;
+            }
+
+            //Start async conversion task
+            string FileTypeToConvert = FileTypeToConvertComboBox.SelectedItem.ToString();
+            string FileTypeTarget = TargetFileTypeComboBox.SelectedItem.ToString();           
+            string FileDirectory = DirectoryTextBox.Text;
+            ItemCollection FileNames = FilesFoundListBox.Items;
+            CurrentConversion = new Task(() => ConvertFiles(FileTypeToConvert,FileTypeTarget,FileDirectory,FileNames));
+            CurrentConversion.Start();
+        }
+
+        //Save regex settings on close
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Properties.Settings.Default.FileDirectorySetting = DirectoryTextBox.Text;
+            Properties.Settings.Default.FileTypeIndex = FileTypeToConvertComboBox.SelectedIndex;
+            Properties.Settings.Default.TargetTypeIndex = TargetFileTypeComboBox.SelectedIndex;
+            Properties.Settings.Default.Save();
+        }
+
+        //Convert the files
+        private void ConvertFiles(string FileTypeToConvert,string FileTypeTarget,string FileDirectory, ItemCollection FileNames)
+        {             
+            this.Dispatcher.Invoke(() => { ConversionProgressBar.Value = 0; });
+            Regex FileExtensionRegex = new Regex(@"\" + FileTypeToConvert, RegexOptions.IgnoreCase | RegexOptions.Compiled);
             //Convert each of the found files
-            Regex FileExtensionRegex = new Regex(@"\" + FileTypeToConvertComboBox.SelectedItem.ToString(), RegexOptions.IgnoreCase | RegexOptions.Compiled);
-            foreach (string File in FilesFoundListBox.Items)
+            foreach (string File in FileNames)
             {
                 try
                 {
-                    string SourceFileFullPath = DirectoryTextBox.Text + "\\" + File;
-                    string TargetFileFullPath = DirectoryTextBox.Text + "\\" + FileExtensionRegex.Replace(File, TargetFileTypeComboBox.SelectedItem.ToString());
+                    string SourceFileFullPath = FileDirectory + "\\" + File;
+                    string TargetFileFullPath = FileDirectory + "\\" + FileExtensionRegex.Replace(File, FileTypeTarget);
                     Mat image = CvInvoke.Imread(SourceFileFullPath);
-                    if(image != null)
-                    {                       
+                    if (image != null)
+                    {
                         CvInvoke.Imwrite(TargetFileFullPath, image);
                     }
                     else
@@ -142,18 +173,12 @@ namespace ImageTypeConvertorWpf
                 {
                     MessageBox.Show("Failed to convert file: " + Except.Message);
                 }
+                this.Dispatcher.Invoke(() => { ConversionProgressBar.Value = ConversionProgressBar.Value + ConversionProgressBar.Maximum / FilesFoundListBox.Items.Count; });
             }
+            this.Dispatcher.Invoke(() => { ConversionProgressBar.Value = ConversionProgressBar.Maximum; });
             MessageBox.Show("Conversion complete");
-            FilesFoundListBox.Items.Clear();
-        }
-
-        //Save regex settings on close
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            Properties.Settings.Default.FileDirectorySetting = DirectoryTextBox.Text;
-            Properties.Settings.Default.FileTypeIndex = FileTypeToConvertComboBox.SelectedIndex;
-            Properties.Settings.Default.TargetTypeIndex = TargetFileTypeComboBox.SelectedIndex;
-            Properties.Settings.Default.Save();
+            this.Dispatcher.Invoke(() => { FilesFoundListBox.Items.Clear(); });
+            this.Dispatcher.Invoke(() => { ConversionProgressBar.Value = 0; });
         }
     }
 }
