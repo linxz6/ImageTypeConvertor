@@ -22,5 +22,41 @@ namespace ImageTypeConvertorWpf.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string FileDirectorySetting {
+            get {
+                return ((string)(this["FileDirectorySetting"]));
+            }
+            set {
+                this["FileDirectorySetting"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int FileTypeIndex {
+            get {
+                return ((int)(this["FileTypeIndex"]));
+            }
+            set {
+                this["FileTypeIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int TargetTypeIndex {
+            get {
+                return ((int)(this["TargetTypeIndex"]));
+            }
+            set {
+                this["TargetTypeIndex"] = value;
+            }
+        }
     }
 }

@@ -31,6 +31,10 @@ namespace ImageTypeConvertorWpf
             InitializeComponent();
             FileTypeToConvertComboBox.ItemsSource = ImageFormats;
             TargetFileTypeComboBox.ItemsSource = ImageFormats;
+            //Load settings from last time
+            DirectoryTextBox.Text = Properties.Settings.Default.FileDirectorySetting;
+            FileTypeToConvertComboBox.SelectedIndex = Properties.Settings.Default.FileTypeIndex;
+            TargetFileTypeComboBox.SelectedIndex = Properties.Settings.Default.TargetTypeIndex;
         }
 
         //Open Windows Explorer UI to select a file directory
@@ -141,6 +145,15 @@ namespace ImageTypeConvertorWpf
             }
             MessageBox.Show("Conversion complete");
             FilesFoundListBox.Items.Clear();
+        }
+
+        //Save regex settings on close
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Properties.Settings.Default.FileDirectorySetting = DirectoryTextBox.Text;
+            Properties.Settings.Default.FileTypeIndex = FileTypeToConvertComboBox.SelectedIndex;
+            Properties.Settings.Default.TargetTypeIndex = TargetFileTypeComboBox.SelectedIndex;
+            Properties.Settings.Default.Save();
         }
     }
 }
