@@ -25,7 +25,9 @@ namespace ImageTypeConvertorWpf
     /// </summary>
     public partial class MainWindow : Window
     {
-        string[] ImageFormats = new string[] {".jpg",".png",".bmp"};
+        string[] ImageFormats = new string[] {".jpg",".png",".bmp",".webp"};
+        int[] jpeg_qualities = new int[] { 100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0 };
+        int[] png_qualities = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
         Task CurrentConversion;
 
         public MainWindow()
@@ -80,7 +82,9 @@ namespace ImageTypeConvertorWpf
                     if (FileExtensionRegex.IsMatch(file))
                     {
                         //add file name to the user display
-                        FilesFoundListBox.Items.Add(file.Replace(@DirectoryTextBox.Text + @"\", string.Empty));
+                        string newfilename = file.Replace(@DirectoryTextBox.Text, string.Empty);
+                        newfilename = newfilename.Replace(@"\", string.Empty);
+                        FilesFoundListBox.Items.Add(newfilename);
                     }
                 }
             }
@@ -115,13 +119,6 @@ namespace ImageTypeConvertorWpf
                 return;
             }
 
-            //Check if the file formats are different
-            if(FileTypeToConvertComboBox.SelectedIndex == TargetFileTypeComboBox.SelectedIndex)
-            {
-                MessageBox.Show("File types are the same.");
-                return;
-            }
-
             //Check if a conversion is currently in progress
             if(CurrentConversion != null && CurrentConversion.IsCompleted == false && CurrentConversion.IsCompleted == false)
             {
@@ -134,7 +131,9 @@ namespace ImageTypeConvertorWpf
             string FileTypeTarget = TargetFileTypeComboBox.SelectedItem.ToString();           
             string FileDirectory = DirectoryTextBox.Text;
             ItemCollection FileNames = FilesFoundListBox.Items;
-            CurrentConversion = new Task(() => ConvertFiles(FileTypeToConvert,FileTypeTarget,FileDirectory,FileNames));
+            bool DeleteAfter = (bool)DeleteAfterConversionCheckBox.IsChecked;
+            int Quality = Convert.ToInt32(QualityComboBox.SelectedItem);
+            CurrentConversion = new Task(() => ConvertFiles(FileTypeToConvert,FileTypeTarget,FileDirectory,FileNames,DeleteAfter,Quality));
             CurrentConversion.Start();
         }
 
@@ -148,10 +147,23 @@ namespace ImageTypeConvertorWpf
         }
 
         //Convert the files
-        private void ConvertFiles(string FileTypeToConvert,string FileTypeTarget,string FileDirectory, ItemCollection FileNames)
+        private void ConvertFiles(string FileTypeToConvert,string FileTypeTarget,string FileDirectory, ItemCollection FileNames,bool DeleteAfterConvert,int Quality)
         {             
             this.Dispatcher.Invoke(() => { ConversionProgressBar.Value = 0; });
             Regex FileExtensionRegex = new Regex(@"\" + FileTypeToConvert, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            //set quality enum
+            Emgu.CV.CvEnum.ImwriteFlags QualityType = new Emgu.CV.CvEnum.ImwriteFlags();
+            switch(FileTypeTarget)
+            {
+                case ".jpg":
+                    QualityType = Emgu.CV.CvEnum.ImwriteFlags.JpegQuality;
+                    break;
+                case ".png":
+                    QualityType = Emgu.CV.CvEnum.ImwriteFlags.PngCompression;
+                    break;
+            }
+            KeyValuePair<Emgu.CV.CvEnum.ImwriteFlags, int> QualitySetting = new KeyValuePair<Emgu.CV.CvEnum.ImwriteFlags, int>(QualityType,Quality);
+
             //Convert each of the found files
             foreach (string File in FileNames)
             {
@@ -162,7 +174,16 @@ namespace ImageTypeConvertorWpf
                     Mat image = CvInvoke.Imread(SourceFileFullPath);
                     if (image != null)
                     {
-                        CvInvoke.Imwrite(TargetFileFullPath, image);
+                        bool ConversionSuccessful = CvInvoke.Imwrite(TargetFileFullPath,image,QualitySetting);
+                        //delete after conversion if option is selected
+                        if((ConversionSuccessful == true) && (DeleteAfterConvert == true) && (FileTypeToConvert != FileTypeTarget))
+                        {
+                            System.IO.File.Delete(SourceFileFullPath);
+                        }
+                        else if(ConversionSuccessful == false)
+                        {
+                            MessageBox.Show("Conversion failed");
+                        }
                     }
                     else
                     {
@@ -179,6 +200,26 @@ namespace ImageTypeConvertorWpf
             MessageBox.Show("Conversion complete");
             this.Dispatcher.Invoke(() => { FilesFoundListBox.Items.Clear(); });
             this.Dispatcher.Invoke(() => { ConversionProgressBar.Value = 0; });
+        }
+
+        //Change quality option for the different image formats
+        private void TargetFileTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            switch(TargetFileTypeComboBox.SelectedIndex)
+            {
+                case 0: //jpg
+                    QualityComboBox.ItemsSource = jpeg_qualities;
+                    QualityComboBox.SelectedIndex = 1;
+                    break;
+                case 1: //png
+                    QualityComboBox.ItemsSource = png_qualities;
+                    QualityComboBox.SelectedIndex = 1;
+                    break;
+                default: //others don't have quality settings
+                    QualityComboBox.ItemsSource = null;
+                    QualityComboBox.SelectedIndex = -1;
+                    break;
+            }
         }
     }
 }
