@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ImageTypeConvertorWpf"
         xmlns:System="clr-namespace:System;assembly=mscorlib" x:Class="ImageTypeConvertorWpf.MainWindow"
         mc:Ignorable="d"
-        Title="Image Format Convertor" Height="638" Width="574.5" Background="#FFEAEAEA" Icon="Windows Logo.png" Closing="Window_Closing">
+        Title="Image Format Convertor" Height="638" Width="574.5" Background="#FFEAEAEA" Icon="Windows Logo.png" Closing="Window_Closing" MinWidth="500" MinHeight="400">
     <Grid>
         <Button x:Name="OpenExplorerButton" Content="Open Explorer" HorizontalAlignment="Right" Margin="0,19,106,0" VerticalAlignment="Top" Width="91" Height="20" Click="OpenExplorerButton_Click" Grid.Column="1"/>
         <Button x:Name="ScanDirectoryButton" Content="Scan Directory" HorizontalAlignment="Right" Margin="0,19,10,0" VerticalAlignment="Top" Width="91" Height="20" Grid.Column="1" Click="ScanDirectoryButton_Click"/>
