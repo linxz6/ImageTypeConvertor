@@ -17,7 +17,8 @@
         <ComboBox x:Name="QualityComboBox" HorizontalAlignment="Left" Margin="279,65,0,0" VerticalAlignment="Top" Width="48" SelectedIndex="0"/>
         <ListBox x:Name="FilesFoundListBox" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="False" SelectionMode="Extended" IsHitTestVisible="True" Margin="10,116,10,67"/>
         <ProgressBar x:Name="ConversionProgressBar" Height="20" Margin="10,0,10,42" VerticalAlignment="Bottom"/>
-        <CheckBox x:Name="DeleteAfterConversionCheckBox" Content="Delete After Conversion" HorizontalAlignment="Right" Margin="0,45,10,0" VerticalAlignment="Top"/>
+        <CheckBox x:Name="DeleteAfterConversionCheckBox" Content="Delete After Conversion" HorizontalAlignment="Right" Margin="0,64,10,0" VerticalAlignment="Top"/>
+        <CheckBox x:Name="ScanSubDirectoriesCheckBox" Content="Scan Sub Directories" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,44,28,0" Click="ScanSubDirectoriesCheckBox_Click"/>
         <Label x:Name="FileDirectoryLabel" Content="File Directory" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.237,0.019" FontFamily="Microsoft Sans Serif"/>
         <Label x:Name="FileTypeToConvertLabel" Content="File Type To Convert" HorizontalAlignment="Left" Margin="10,39,0,0" VerticalAlignment="Top" RenderTransformOrigin="-1.684,-0.423"/>
         <Label x:Name="ConvertArrowLabel" Content="&gt;" HorizontalAlignment="Left" Margin="130,55,0,0" VerticalAlignment="Top" RenderTransformOrigin="-1.684,-0.423" FontWeight="Bold" FontSize="20"/>

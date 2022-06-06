@@ -58,5 +58,29 @@ namespace ImageTypeConvertorWpf.Properties {
                 this["TargetTypeIndex"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SubDirectorySetting {
+            get {
+                return ((bool)(this["SubDirectorySetting"]));
+            }
+            set {
+                this["SubDirectorySetting"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DeleteAfterSetting {
+            get {
+                return ((bool)(this["DeleteAfterSetting"]));
+            }
+            set {
+                this["DeleteAfterSetting"] = value;
+            }
+        }
     }
 }

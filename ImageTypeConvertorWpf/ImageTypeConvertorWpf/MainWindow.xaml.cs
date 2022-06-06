@@ -39,6 +39,8 @@ namespace ImageTypeConvertorWpf
             DirectoryTextBox.Text = Properties.Settings.Default.FileDirectorySetting;
             FileTypeToConvertComboBox.SelectedIndex = Properties.Settings.Default.FileTypeIndex;
             TargetFileTypeComboBox.SelectedIndex = Properties.Settings.Default.TargetTypeIndex;
+            ScanSubDirectoriesCheckBox.IsChecked = Properties.Settings.Default.SubDirectorySetting;
+            DeleteAfterConversionCheckBox.IsChecked = Properties.Settings.Default.DeleteAfterSetting;
         }
 
         //Open Windows Explorer UI to select a file directory
@@ -69,7 +71,12 @@ namespace ImageTypeConvertorWpf
             try
             {
                 //scan the folder for all file names
-                string[] Files = Directory.GetFiles(DirectoryTextBox.Text);
+                SearchOption ScanSubDirectories = SearchOption.TopDirectoryOnly;
+                if (ScanSubDirectoriesCheckBox.IsChecked == true)
+                {
+                    ScanSubDirectories = SearchOption.AllDirectories;
+                }
+                string[] Files = Directory.GetFiles(DirectoryTextBox.Text,"*",ScanSubDirectories);
 
                 //create regex to check the file extension
                 Regex FileExtensionRegex = new Regex(@"\" + FileTypeToConvertComboBox.SelectedItem.ToString(), RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -83,7 +90,7 @@ namespace ImageTypeConvertorWpf
                     {
                         //add file name to the user display
                         string newfilename = file.Replace(@DirectoryTextBox.Text, string.Empty);
-                        newfilename = newfilename.Replace(@"\", string.Empty);
+                        newfilename = Regex.Replace(newfilename, @"^\\", "");
                         FilesFoundListBox.Items.Add(newfilename);
                     }
                 }
@@ -103,10 +110,7 @@ namespace ImageTypeConvertorWpf
         //Reset found files on file type to convert change
         private void FileTypeToConvertComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (FilesFoundListBox != null)
-            {
-                FilesFoundListBox.Items.Clear();
-            }
+            FilesFoundListBox.Items.Clear();
         }
 
         //Convert the found files 
@@ -143,6 +147,8 @@ namespace ImageTypeConvertorWpf
             Properties.Settings.Default.FileDirectorySetting = DirectoryTextBox.Text;
             Properties.Settings.Default.FileTypeIndex = FileTypeToConvertComboBox.SelectedIndex;
             Properties.Settings.Default.TargetTypeIndex = TargetFileTypeComboBox.SelectedIndex;
+            Properties.Settings.Default.SubDirectorySetting = (bool)ScanSubDirectoriesCheckBox.IsChecked;
+            Properties.Settings.Default.DeleteAfterSetting = (bool)DeleteAfterConversionCheckBox.IsChecked;
             Properties.Settings.Default.Save();
         }
 
@@ -220,6 +226,12 @@ namespace ImageTypeConvertorWpf
                     QualityComboBox.SelectedIndex = -1;
                     break;
             }
+        }
+
+        //Reset found files on subdirectory setting change
+        private void ScanSubDirectoriesCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            FilesFoundListBox.Items.Clear();
         }
     }
 }
